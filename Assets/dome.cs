@@ -1,14 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
 using System;
 
+
 public class dome : MonoBehaviour {
-    public string webID = "http://images.earthcam.com/ec_metros/ourcams/fridays.jpg";
-    public string webAnimal = "http://images.earthcam.com/ec_metros/ourcams/";
-    public string webInstruction = "http://images.earthcam.com/ec_metros/ourcams/";
-    public string webinterval = "http://images.earthcam.com/ec_metros/ourcams/";
-    public string webintervalInstruction = "http://images.earthcam.com/ec_metros/ourcams/";
+    public string webID;
+    public string webAnimal;
+    public string webInstruction;
+    public string webinterval;
+    public string webintervalInstruction;
     public string curwebAnimal;
     public string curwebInstruction;
     public string instruction;
@@ -16,6 +18,8 @@ public class dome : MonoBehaviour {
     public string animalImage;
     public string intervalImage;
     public string intervalInstruction;
+    public Animal animal;
+    public List<qrcode> qrlist;
     public WWW url;
     public WWW www;
     public bool flag = true;
@@ -23,7 +27,11 @@ public class dome : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        //url = new WWW("");
+        webID = "http://70.32.108.82:3000/qrcode/findByList/";
+        webAnimal = "http://70.32.108.82:3000/animal/";
+        webInstruction = "http://70.32.108.82:3000/animal/";
+        webinterval = "http://70.32.108.82:3000/animal/";
+        webintervalInstruction = "http://70.32.108.82:3000/animal/";
     }
 	
 	// Update is called once per frame
@@ -38,12 +46,12 @@ public class dome : MonoBehaviour {
             instruction = getInstruction(webID);
             if (instruction != "")
             {
-                flag = true;
+                //flag = true;
             }
 
             // retrieve animalImage
             curwebAnimal = webAnimal + animalID;
-            animalImage = getAnimalName(curwebAnimal);
+            animalImage = "animalPicture" + getAnimalName(curwebAnimal);
             if (animalImage != "")
             {
                 // drawSprite
@@ -56,11 +64,12 @@ public class dome : MonoBehaviour {
             intervalInstruction = getInstruction(webintervalInstruction);
             if (intervalInstruction != "")
             {
-                flag = true;
+                //flag = true;
             }
 
             // retrieve intervalImage
-            intervalImage = getAnimalName(webinterval);
+            //intervalImage =  getAnimalName(webinterval);
+            intervalImage = "mammals";
             if (intervalImage != "")
             {
                 // drawSprite
@@ -99,7 +108,8 @@ public class dome : MonoBehaviour {
             {
                 if (www.text != null)
                 {
-                    animalImage = www.text;
+                   animal = JsonUtility.FromJson<Animal>(www.text);
+                   animalImage = animal.Image;
                 }
             }
             catch { }
@@ -120,6 +130,8 @@ public class dome : MonoBehaviour {
             {
                 if (www.text != null)
                 {
+                    animal = JsonUtility.FromJson<Animal>(www.text);
+                    instruction = animal.Description;
                     instruction = www.text;
                 }
             }
@@ -141,7 +153,11 @@ public class dome : MonoBehaviour {
             {
                 if (www.text != null)
                 {
-                    animalID = www.text;
+                    //animalID = dissect(www.text);
+                    JSONObject j = new JSONObject(www.text);
+                    animalID = accessData(j);
+                    //qrlist = JsonUtility.FromJson<List<qrcode>>(www.text);
+                    //animalID = qrlist[qrlist.Count - 1].AnimalId;
                 }
             }
             catch {  }
@@ -156,5 +172,26 @@ public class dome : MonoBehaviour {
         transform.GetComponent<Image>().sprite = Resources.Load<Sprite>(name);
         transform.localScale = new Vector2(0.5F, 0.5F);
         //transform.position = position;
+    }
+
+    string dissect(string obj)
+    {
+        string ret = "";
+
+        ret = obj.Substring(obj.Length - 3, 1);
+
+        return ret;
+    }
+
+
+    string accessData(JSONObject obj)
+    {
+        string ret = "";
+
+        JSONObject json = obj.list[obj.list.Count-1];
+        JSONObject field = json.list[1];
+        ret = field.str;
+
+        return ret;
     }
 }
